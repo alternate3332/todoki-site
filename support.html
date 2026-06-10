@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>サポート — todoki</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="inner">
+    <a class="brand" href="./">todoki</a>
+    <nav>
+      <a href="usage.html">使い方</a>
+      <a href="support.html">サポート</a>
+      <a href="terms.html">利用規約</a>
+      <a href="privacy.html">プライバシー</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <h1>サポート</h1>
+  <p class="lead">todoki に関するお問い合わせ・不具合報告は、メールでお寄せください。</p>
+
+  <p><strong>連絡先:</strong> <a href="mailto:alternate3332@gmail.com">alternate3332@gmail.com</a></p>
+  <p>不具合報告の際は、可能な範囲で「アプリのバージョン / iOS のバージョン / 発生時刻 / どの操作で何が起きたか」を添えていただけると調査がスムーズです。<strong>Webhook URL 全体は記載しないでください</strong>（URL は秘密情報です。必要な場合は末尾数文字のみで結構です）。</p>
+
+  <h2>よくある質問</h2>
+
+  <h3>通知が届きません</h3>
+  <ul>
+    <li>iOS の「設定 &gt; 通知 &gt; todoki」で通知が許可されているか確認してください。</li>
+    <li>アプリ内で該当 URL がミュート（OFF）になっていないか確認してください。</li>
+    <li>URL を再発行した場合、旧 URL は失効しています。送信側に新しい URL を設定し直してください。</li>
+    <li>集中モード（おやすみモード）中は通知の表示が抑制されることがあります。</li>
+  </ul>
+
+  <h3>URL が漏れたかもしれません</h3>
+  <p>アプリの該当 URL から「再発行」してください。旧 URL は即座に無効になり、以後の送信は <code>410</code> で拒否されます。送信側には新 URL を設定し直してください。</p>
+
+  <h3>機種変更・再インストールでデータは引き継げますか？</h3>
+  <p>外部アカウント（Google・LINE 等）と連携している場合は引き継げます。<strong>連携していない場合、発行済みの URL を含むデータは端末限りで、復元できません</strong>。機種変更の前に連携を済ませてください。</p>
+
+  <h3>Android 版はありますか？</h3>
+  <p>現在は iOS のみ提供しています。Android 版は今後の対応を予定しています。</p>
+
+  <h2>関連ページ</h2>
+  <ul>
+    <li><a href="usage.html">使い方（送信例・payload リファレンス）</a></li>
+    <li><a href="terms.html">利用規約</a></li>
+    <li><a href="privacy.html">プライバシーポリシー</a></li>
+  </ul>
+</main>
+<footer class="site">
+  <div class="inner">
+    <a href="terms.html">利用規約</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="support.html">サポート</a>
+    <span>© 2026 todoki</span>
+  </div>
+</footer>
+</body>
+</html>

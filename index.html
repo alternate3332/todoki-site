@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>todoki — Webhook を叩くだけでスマホに通知</title>
+<meta name="description" content="todoki は、発行された URL に HTTP POST するだけでスマホにプッシュ通知が届くサービスです。CI・サーバ・スクリプトから 1 行で通知。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="inner">
+    <a class="brand" href="./">todoki</a>
+    <nav>
+      <a href="usage.html">使い方</a>
+      <a href="support.html">サポート</a>
+      <a href="terms.html">利用規約</a>
+      <a href="privacy.html">プライバシー</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <h1>URL を叩くだけで、<br>スマホに通知が届く。</h1>
+  <p class="lead">todoki は、発行された Webhook URL に HTTP POST するだけでスマホにプッシュ通知が届くサービスです。アカウント登録なし、SDK なし。curl 1 行から始められます。</p>
+
+  <pre><code>curl -X POST "$TODOKI_URL" \
+  -H 'content-type: application/json' \
+  -d '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'</code></pre>
+
+  <h2>使い方は 3 ステップ</h2>
+  <ol class="steps">
+    <li><strong>アプリを入れる</strong> — todoki アプリをインストールして起動するだけ。ログインは不要です。</li>
+    <li><strong>URL を発行する</strong> — アプリ内で通知用の URL を発行し、コピーします。URL は用途ごとに何本でも作れます。</li>
+    <li><strong>POST する</strong> — CI・サーバ・スクリプトなど、HTTP を話せるものならどこからでも。届いた通知はアプリが受け取ります。</li>
+  </ol>
+
+  <h2>こんな用途に</h2>
+  <ul>
+    <li>CI のビルド結果・デプロイ完了の通知</li>
+    <li>サーバ監視・バッチ処理の異常検知アラート</li>
+    <li>自作スクリプト・IoT デバイスからのお知らせ</li>
+    <li>長時間処理の「終わったよ」通知</li>
+  </ul>
+
+  <h2>特徴</h2>
+  <ul>
+    <li><strong>摩擦ゼロ</strong> — アプリを入れた瞬間から使える。アカウント作成・メール認証なし。</li>
+    <li><strong>URL がそのまま秘密鍵</strong> — 推測不能なランダム URL。漏れたらアプリからワンタップで再発行（旧 URL は即失効）。</li>
+    <li><strong>柔軟な payload</strong> — JSON でタイトル・本文・タップ時に開く URL・優先度を指定。プレーンテキストを投げるだけでも OK。</li>
+    <li><strong>URL ごとのテンプレート</strong> — 送信側はサービスの生 JSON を送るだけ。通知の見た目は URL 側の設定で整形。</li>
+  </ul>
+
+  <p><a href="usage.html"><strong>→ 送り方の詳細（curl / CI の例）を見る</strong></a></p>
+</main>
+<footer class="site">
+  <div class="inner">
+    <a href="terms.html">利用規約</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="support.html">サポート</a>
+    <span>© 2026 todoki</span>
+  </div>
+</footer>
+</body>
+</html>

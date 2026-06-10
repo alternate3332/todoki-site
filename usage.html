@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>使い方 — todoki</title>
+<meta name="description" content="todoki への通知の送り方。curl・CI からの送信例、payload フィールド、URL ごとのテンプレート。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="inner">
+    <a class="brand" href="./">todoki</a>
+    <nav>
+      <a href="usage.html">使い方</a>
+      <a href="support.html">サポート</a>
+      <a href="terms.html">利用規約</a>
+      <a href="privacy.html">プライバシー</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <h1>使い方</h1>
+  <p class="lead">アプリで発行した URL に HTTP POST するだけです。このページでは payload の書き方と送信例を説明します。</p>
+
+  <div class="note">
+    以下の例の <code>$TODOKI_URL</code> は、アプリの URL 一覧からコピーした<strong>あなたの Webhook URL</strong>（<code>https://hook.todoki.dev/hook/&lt;id&gt;</code> 形式）に置き換えてください。URL 末尾の id が秘密鍵の役割を果たすため、<strong>URL は公開リポジトリ等に書かず、CI の secret として扱ってください</strong>。
+  </div>
+
+  <h2>最小の例</h2>
+  <pre><code>curl -X POST "$TODOKI_URL" \
+  -H 'content-type: application/json' \
+  -d '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'
+# =&gt; 202 {"ok":true}</code></pre>
+
+  <p>JSON を組み立てるのも面倒なら、プレーンテキストを投げるだけでも通知になります（叩くだけモード）:</p>
+  <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' -d 'ビルド終わったよ'</code></pre>
+
+  <h2>payload フィールド</h2>
+  <p>JSON で送る場合、以下のフィールドが使えます。すべて省略可能です。</p>
+  <table>
+    <tr><th>フィールド</th><th>意味</th><th>例</th></tr>
+    <tr><td><code>title</code></td><td>通知タイトル</td><td><code>"ビルド失敗"</code></td></tr>
+    <tr><td><code>body</code></td><td>本文</td><td><code>"main ブランチ"</code></td></tr>
+    <tr><td><code>priority</code></td><td>優先度。<code>high</code>（即時）/ <code>normal</code> / <code>low</code></td><td><code>"high"</code></td></tr>
+    <tr><td><code>click</code></td><td>通知タップ時に開く URL</td><td><code>"https://example.com/build/123"</code></td></tr>
+  </table>
+  <p>適用の優先順位は「<strong>payload の明示フィールド ＞ URL に設定したテンプレート ＞ 既定値</strong>」です。</p>
+
+  <h3>タップで URL を開く</h3>
+  <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
+  -d '{"title":"CI 失敗","body":"ログを開く","click":"https://example.com/ci/run/123"}'</code></pre>
+
+  <h3>緊急度を上げる</h3>
+  <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
+  -d '{"title":"アラート","body":"CPU 90%","priority":"high"}'</code></pre>
+
+  <h2>URL ごとのテンプレート</h2>
+  <p>送信側のサービスが決まった形の JSON を送ってくる場合（例: <code>{"repo":"...","msg":"..."}</code>）、URL 側にテンプレートを設定しておけば、送信側は生の JSON を送るだけで整形された通知になります。テンプレートはアプリの URL 設定から登録します。</p>
+  <pre><code># URL に設定したテンプレート: {"title":"{{repo}}","body":"{{msg}}"}
+
+curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
+  -d '{"repo":"todoki/backend","msg":"build passed"}'
+# =&gt; 通知: タイトル「todoki/backend」 本文「build passed」</code></pre>
+  <p><code>{{a.b}}</code> のようなドット記法でネストした値も参照できます。</p>
+
+  <h2>CI からの利用例</h2>
+  <h3>GitHub Actions</h3>
+  <pre><code># Webhook URL はリポジトリの Secrets に TODOKI_URL として登録しておく
+- name: Notify
+  if: always()
+  run: |
+    curl -sf -X POST "${{ secrets.TODOKI_URL }}" \
+      -H 'content-type: application/json' \
+      -d "{\"title\":\"${{ github.repository }}\",\"body\":\"${{ job.status }}: ${{ github.workflow }}\"}"</code></pre>
+
+  <h3>シェルスクリプト（長時間処理の完了通知）</h3>
+  <pre><code>./long-running-job.sh; \
+curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' \
+  -d "job finished: exit=$?"</code></pre>
+
+  <h2>レスポンス</h2>
+  <table>
+    <tr><th>状況</th><th>コード</th><th>body</th></tr>
+    <tr><td>受け付けた</td><td><code>202</code></td><td><code>{"ok":true}</code></td></tr>
+    <tr><td>URL が再発行で失効済み</td><td><code>410</code></td><td><code>{"error":"url revoked"}</code></td></tr>
+    <tr><td>URL が存在しない</td><td><code>404</code></td><td><code>{"error":"url not found"}</code></td></tr>
+  </table>
+  <p>セキュリティ上の理由から、応答には配信の詳細（端末への到達結果やミュート状態など）を含めません。<code>202</code> は「受け付けた」ことを意味します。</p>
+
+  <h2>URL の管理</h2>
+  <ul>
+    <li><strong>再発行</strong> — URL が漏れた疑いがあるときは、アプリからワンタップで再発行。旧 URL は即座に失効（<code>410</code>）します。</li>
+    <li><strong>ミュート</strong> — URL ごとに通知の ON/OFF を切り替えられます。送信側にはミュートを悟られません（<code>202</code> のまま）。</li>
+    <li><strong>複数 URL</strong> — 用途・サービスごとに URL を分けるのがおすすめです。ラベルを付けて管理できます。</li>
+  </ul>
+</main>
+<footer class="site">
+  <div class="inner">
+    <a href="terms.html">利用規約</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="support.html">サポート</a>
+    <span>© 2026 todoki</span>
+  </div>
+</footer>
+</body>
+</html>
