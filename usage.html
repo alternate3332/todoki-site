@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>使い方 — todoki</title>
-<meta name="description" content="todoki への通知の送り方。curl・CI からの送信例、payload フィールド、URL ごとのテンプレート。">
+<meta name="description" content="todoki への通知の送り方。curl・JavaScript・Python・Go・Ruby・PowerShell・HTTPie からの送信例、payload フィールド、URL ごとのテンプレート。">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -54,6 +54,60 @@
   <h3>緊急度を上げる</h3>
   <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
   -d '{"title":"アラート","body":"CPU 90%","priority":"high"}'</code></pre>
+
+  <h2>いろいろな言語・ツールから送る</h2>
+  <p>ただの HTTP POST なので、HTTP を送れるものなら何からでも通知できます。<code>$TODOKI_URL</code> はあなたの Webhook URL に置き換えてください。<strong>アプリの「テスト送信」からは、その URL 入りのスニペットをコピーできます。</strong></p>
+
+  <h3>JavaScript（fetch・ブラウザ / Deno / Bun / Node 18+）</h3>
+  <pre><code>fetch("$TODOKI_URL", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ title: "デプロイ完了", body: "v1.2.3 を本番反映" }),
+});</code></pre>
+
+  <h3>Python（requests）</h3>
+  <pre><code>import requests
+requests.post("$TODOKI_URL", json={"title": "デプロイ完了", "body": "v1.2.3 を本番反映"})</code></pre>
+
+  <p>標準ライブラリだけ（依存なし）なら:</p>
+  <pre><code>from urllib.request import urlopen, Request
+import json
+body = json.dumps({"title": "デプロイ完了", "body": "v1.2.3 を本番反映"}).encode()
+urlopen(Request("$TODOKI_URL", data=body, headers={"content-type": "application/json"}))</code></pre>
+
+  <h3>Node.js（標準 https・依存なし）</h3>
+  <pre><code>const https = require("https");
+const data = JSON.stringify({ title: "デプロイ完了", body: "v1.2.3 を本番反映" });
+const req = https.request("$TODOKI_URL", {
+  method: "POST",
+  headers: { "content-type": "application/json", "content-length": data.length },
+});
+req.write(data); req.end();</code></pre>
+
+  <h3>Go</h3>
+  <pre><code>package main
+
+import ("net/http"; "strings")
+
+func main() {
+  body := `{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}`
+  http.Post("$TODOKI_URL", "application/json", strings.NewReader(body))
+}</code></pre>
+
+  <h3>Ruby</h3>
+  <pre><code>require "net/http"; require "json"
+uri = URI("$TODOKI_URL")
+Net::HTTP.post(uri, {title: "デプロイ完了", body: "v1.2.3 を本番反映"}.to_json,
+               "content-type" =&gt; "application/json")</code></pre>
+
+  <h3>PowerShell</h3>
+  <pre><code>Invoke-RestMethod -Uri "$TODOKI_URL" -Method Post -ContentType "application/json" `
+  -Body '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'</code></pre>
+
+  <h3>HTTPie</h3>
+  <pre><code>http POST "$TODOKI_URL" title="デプロイ完了" body="v1.2.3 を本番反映"</code></pre>
+
+  <p>JSON すら不要なら、プレーンテキストを本文に投げるだけでも通知になります（<code>content-type: text/plain</code>）。</p>
 
   <h2>URL ごとのテンプレート</h2>
   <p>送信側のサービスが決まった形の JSON を送ってくる場合（例: <code>{"repo":"...","msg":"..."}</code>）、URL 側にテンプレートを設定しておけば、送信側は生の JSON を送るだけで整形された通知になります。テンプレートはアプリの URL 設定から登録します。</p>
