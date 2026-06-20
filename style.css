@@ -57,8 +57,21 @@ main {
 }
 
 h1 { font-size: 28px; line-height: 1.4; }
-h2 { font-size: 20px; margin-top: 2.2em; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-h3 { font-size: 16px; margin-top: 1.8em; }
+h2 {
+  font-size: 21px;
+  margin-top: 2.6em;
+  padding: 7px 14px;
+  line-height: 1.45;
+  border-left: 4px solid var(--accent);
+  background: var(--bg-soft);
+  border-radius: 0 8px 8px 0;
+}
+h3 {
+  font-size: 16px;
+  margin-top: 1.9em;
+  padding-left: 11px;
+  border-left: 3px solid #f3b27a;
+}
 
 a { color: var(--accent); }
 
@@ -131,6 +144,162 @@ th { background: var(--bg-soft); }
   justify-content: center;
   font-size: 14px;
 }
+
+.muted { color: var(--fg-soft); font-size: 14px; }
+
+h2 { scroll-margin-top: 16px; }
+
+/* --- 目次（ページ内ナビ） --- */
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 1.4em 0 0;
+  padding: 0;
+  list-style: none;
+}
+.toc a {
+  display: inline-block;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--fg-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* --- 色つきコールアウト --- */
+.callout {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 1.2em 0;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.callout-title { display: block; font-weight: 700; margin-bottom: 2px; }
+.callout.info { background: #e7f0fb; color: #2c4a63; }
+.callout.info .callout-title { color: #1862ab; }
+.callout.tip  { background: #e9f7ec; color: #2c5239; }
+.callout.tip .callout-title  { color: #2b8a3e; }
+.callout.warn { background: #fff4e6; color: #6b4a1f; }
+.callout.warn .callout-title { color: #e8590c; }
+
+/* --- タブ（言語切り替え） --- */
+.tabs { margin: 1.2em 0; }
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg-soft);
+  padding: 8px 13px;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  line-height: 1.4;
+}
+.tab:hover { color: var(--fg); background: var(--bg-soft); }
+.tab[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+}
+.tabs[data-tabs-ready] .tab-panel { display: none; }
+.tabs[data-tabs-ready] .tab-panel.is-active { display: block; }
+.tab-panel > pre:first-child { margin-top: 14px; }
+.tab-panel .sub-label {
+  font-size: 13px;
+  color: var(--fg-soft);
+  margin: 12px 0 -6px;
+}
+
+/* --- ハートビートの通知タイムライン --- */
+.hb-flow {
+  list-style: none;
+  padding-left: 0;
+  margin: 1.2em 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hb-flow li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+.hb-flow li.hb-miss { border-left: 4px solid var(--accent); }
+.hb-flow li.hb-back { border-left: 4px solid #2f9e44; }
+.hb-badge {
+  flex: 0 0 auto;
+  min-width: 46px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  white-space: nowrap;
+}
+.hb-badge.ok { background: #2f9e44; }
+.hb-when { display: block; font-size: 12px; color: var(--fg-soft); margin-top: 3px; }
+
+/* --- レスポンス表のステータス色分け --- */
+code.code-ok  { background: #e9f7ec; color: #2b8a3e; }
+code.code-err { background: #ffece9; color: #c92a2a; }
+
+/* --- FAQ アコーディオン（details/summary） --- */
+.faq { margin: 1.2em 0; }
+.faq details {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 10px 0;
+  background: var(--bg);
+}
+.faq details[open] { border-color: var(--accent); }
+.faq summary {
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+  padding: 14px 46px 14px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary:hover { color: var(--accent); }
+.faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--accent);
+}
+.faq details[open] > summary { border-bottom: 1px solid var(--border); }
+.faq details[open] > summary::after { content: "\2013"; }
+.faq .faq-body { padding: 4px 16px 16px; font-size: 15px; }
+.faq .faq-body > :first-child { margin-top: 0; }
+.faq .faq-body > :last-child { margin-bottom: 0; }
+.faq .faq-body ul { margin: 0; padding-left: 1.3em; }
 
 footer.site {
   border-top: 1px solid var(--border);

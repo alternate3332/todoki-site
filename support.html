@@ -26,27 +26,61 @@
   <h1>サポート</h1>
   <p class="lead">todoki に関するお問い合わせ・不具合報告は、メールでお寄せください。</p>
 
-  <p><strong>連絡先:</strong> <a href="mailto:devtsuzuki961@gmail.com">devtsuzuki961@gmail.com</a></p>
+  <div class="callout info">
+    <span class="callout-title">連絡先</span>
+    <a href="mailto:devtsuzuki961@gmail.com">devtsuzuki961@gmail.com</a>
+  </div>
   <p>不具合報告の際は、可能な範囲で「アプリのバージョン / iOS のバージョン / 発生時刻 / どの操作で何が起きたか」を添えていただけると調査がスムーズです。<strong>Webhook URL 全体は記載しないでください</strong>（URL は秘密情報です。必要な場合は末尾数文字のみで結構です）。</p>
 
   <h2>よくある質問</h2>
 
-  <h3>通知が届きません</h3>
-  <ul>
-    <li>iOS の「設定 &gt; 通知 &gt; todoki」で通知が許可されているか確認してください。</li>
-    <li>アプリ内で該当 URL がミュート（OFF）になっていないか確認してください。</li>
-    <li>URL を再発行した場合、旧 URL は失効しています。送信側に新しい URL を設定し直してください。</li>
-    <li>集中モード（おやすみモード）中は通知の表示が抑制されることがあります。</li>
-  </ul>
+  <div class="faq">
+    <details>
+      <summary>通知が届きません</summary>
+      <div class="faq-body">
+        <ul>
+          <li>iOS の「設定 &gt; 通知 &gt; todoki」で通知が許可されているか確認してください。</li>
+          <li>アプリ内で該当 URL がミュート（OFF）になっていないか確認してください。</li>
+          <li>URL を再発行した場合、旧 URL は失効しています。送信側に新しい URL を設定し直してください。</li>
+          <li>集中モード（おやすみモード）中は通知の表示が抑制されることがあります。</li>
+        </ul>
+      </div>
+    </details>
 
-  <h3>URL が漏れたかもしれません</h3>
-  <p>アプリの該当 URL から「再発行」してください。旧 URL は即座に無効になり、以後の送信は <code>410</code> で拒否されます。送信側には新 URL を設定し直してください。</p>
+    <details>
+      <summary>途絶監視（ハートビート）— 通知が来すぎる / 来ない / 出したくない</summary>
+      <div class="faq-body">
+        <p>途絶監視は、<strong>その URL が一定時間 POST されなかったこと（沈黙）</strong>を検知して知らせる機能です。アプリの URL 詳細画面で、URL ごとに「途絶を監視」を ON にできます。</p>
+        <ul>
+          <li><strong>途絶通知を出したくない</strong> — 設定した監視間隔の内に、最低 1 回その URL へ POST してください（普段の通知 POST も心拍としてカウントされます）。</li>
+          <li><strong>何度も来る</strong> — 1 回の途絶につき最大 4 通（途絶 1 + 追い通知 2 + 復帰 1）で打ち止めです。鳴り続けることはありません。間隔が短すぎる場合は長めに設定し直してください。</li>
+          <li><strong>来ない</strong> — その URL がミュート（OFF）だと、途絶通知も届きません（アプリ内の「途絶」バッジだけが付きます）。</li>
+        </ul>
+        <p>詳しくは <a href="usage.html#heartbeat">使い方の途絶監視（ハートビート）</a> を参照してください。</p>
+      </div>
+    </details>
 
-  <h3>機種変更・再インストールでデータは引き継げますか？</h3>
-  <p><strong>機種変更・端末の初期化ではデータは引き継げません</strong>（外部アカウント連携による引き継ぎ機能は今後提供予定です）。アプリを削除した場合、通知履歴は失われます（URL は通常復元されますが保証はありません）。履歴は「設定 &gt; 履歴を書き出す」でバックアップできます。</p>
+    <details>
+      <summary>URL が漏れたかもしれません</summary>
+      <div class="faq-body">
+        <p>アプリの該当 URL から「再発行」してください。旧 URL は即座に無効になり、以後の送信は <code>410</code> で拒否されます。送信側には新 URL を設定し直してください。</p>
+      </div>
+    </details>
 
-  <h3>Android 版はありますか？</h3>
-  <p>現在は iOS のみ提供しています。Android 版は今後の対応を予定しています。</p>
+    <details>
+      <summary>機種変更・再インストールでデータは引き継げますか？</summary>
+      <div class="faq-body">
+        <p><strong>機種変更・端末の初期化ではデータは引き継げません</strong>（外部アカウント連携による引き継ぎ機能は今後提供予定です）。アプリを削除した場合、通知履歴は失われます（URL は通常復元されますが保証はありません）。履歴は「設定 &gt; 履歴を書き出す」でバックアップできます。</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Android 版はありますか？</summary>
+      <div class="faq-body">
+        <p>現在は iOS のみ提供しています。Android 版は今後の対応を予定しています。</p>
+      </div>
+    </details>
+  </div>
 
   <h2>関連ページ</h2>
   <ul>

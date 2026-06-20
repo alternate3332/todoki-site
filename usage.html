@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>使い方 — todoki</title>
-<meta name="description" content="todoki への通知の送り方。curl・JavaScript・Python・Go・Ruby・PowerShell・HTTPie からの送信例、payload フィールド、URL ごとのテンプレート。">
+<meta name="description" content="todoki への通知の送り方。curl・JavaScript・Python・Go・Ruby・PowerShell・HTTPie からの送信例、payload フィールド、URL ごとのテンプレート、途絶監視（ハートビート）の使い方。">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -25,13 +25,25 @@
 </header>
 <main>
   <h1>使い方</h1>
-  <p class="lead">アプリで発行した URL に HTTP POST するだけです。このページでは payload の書き方と送信例を説明します。</p>
+  <p class="lead">アプリで発行した URL に HTTP POST するだけです。このページでは payload の書き方・送信例と、URL が途絶えたら知らせる「途絶監視」を説明します。</p>
+
+  <ul class="toc">
+    <li><a href="#minimal">最小の例</a></li>
+    <li><a href="#payload">payload フィールド</a></li>
+    <li><a href="#languages">言語・ツール別の送信例</a></li>
+    <li><a href="#templates">URL ごとのテンプレート</a></li>
+    <li><a href="#ci">CI からの利用例</a></li>
+    <li><a href="#heartbeat">途絶監視（ハートビート）</a></li>
+    <li><a href="#responses">レスポンス</a></li>
+    <li><a href="#manage">URL の管理</a></li>
+    <li><a href="#devices">複数の端末で受け取る（端末リンク）</a></li>
+  </ul>
 
   <div class="note">
     以下の例の <code>$TODOKI_URL</code> は、アプリの URL 一覧からコピーした<strong>あなたの Webhook URL</strong>（<code>https://hook.todoki.dev/hook/&lt;id&gt;</code> 形式）に置き換えてください。URL 末尾の id が秘密鍵の役割を果たすため、<strong>URL は公開リポジトリ等に書かず、CI の secret として扱ってください</strong>。
   </div>
 
-  <h2>最小の例</h2>
+  <h2 id="minimal">最小の例</h2>
   <pre><code>curl -X POST "$TODOKI_URL" \
   -H 'content-type: application/json' \
   -d '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'
@@ -40,7 +52,7 @@
   <p>JSON を組み立てるのも面倒なら、プレーンテキストを投げるだけでも通知になります（叩くだけモード）:</p>
   <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' -d 'ビルド終わったよ'</code></pre>
 
-  <h2>payload フィールド</h2>
+  <h2 id="payload">payload フィールド</h2>
   <p>JSON で送る場合、以下のフィールドが使えます。すべて省略可能です。</p>
   <table>
     <tr><th>フィールド</th><th>意味</th><th>例</th></tr>
@@ -59,37 +71,62 @@
   <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
   -d '{"title":"アラート","body":"CPU 90%","priority":"high"}'</code></pre>
 
-  <h2>いろいろな言語・ツールから送る</h2>
-  <p>ただの HTTP POST なので、HTTP を送れるものなら何からでも通知できます。<code>$TODOKI_URL</code> はあなたの Webhook URL に置き換えてください。<strong>アプリの「テスト送信」からは、その URL 入りのスニペットをコピーできます。</strong></p>
+  <h2 id="languages">言語・ツール別の送信例</h2>
+  <p>ただの HTTP POST なので、HTTP を送れるものなら何からでも通知できます。下のタブで言語を切り替えてください。<code>$TODOKI_URL</code> はあなたの Webhook URL に置き換えます（<strong>アプリの「テスト送信」から、その URL 入りのスニペットをそのままコピーできます</strong>）。</p>
 
-  <h3>JavaScript（fetch・ブラウザ / Deno / Bun / Node 18+）</h3>
-  <pre><code>fetch("$TODOKI_URL", {
+  <div class="tabs" data-tabs>
+    <div class="tab-bar" role="tablist" aria-label="送信例の言語">
+      <button class="tab" type="button" role="tab" data-tab="curl" aria-selected="true">curl</button>
+      <button class="tab" type="button" role="tab" data-tab="js" aria-selected="false">JavaScript</button>
+      <button class="tab" type="button" role="tab" data-tab="python" aria-selected="false">Python</button>
+      <button class="tab" type="button" role="tab" data-tab="node" aria-selected="false">Node.js</button>
+      <button class="tab" type="button" role="tab" data-tab="go" aria-selected="false">Go</button>
+      <button class="tab" type="button" role="tab" data-tab="ruby" aria-selected="false">Ruby</button>
+      <button class="tab" type="button" role="tab" data-tab="powershell" aria-selected="false">PowerShell</button>
+      <button class="tab" type="button" role="tab" data-tab="httpie" aria-selected="false">HTTPie</button>
+    </div>
+
+    <div class="tab-panel is-active" role="tabpanel" data-panel="curl">
+      <pre><code>curl -X POST "$TODOKI_URL" \
+  -H 'content-type: application/json' \
+  -d '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'</code></pre>
+      <p class="muted">JSON すら不要なら、プレーンテキストを投げるだけでも通知になります（叩くだけモード）:</p>
+      <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' -d 'ビルド終わったよ'</code></pre>
+    </div>
+
+    <div class="tab-panel" role="tabpanel" data-panel="js">
+      <p class="sub-label">ブラウザ / Deno / Bun / Node 18+（標準の fetch）</p>
+      <pre><code>fetch("$TODOKI_URL", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ title: "デプロイ完了", body: "v1.2.3 を本番反映" }),
 });</code></pre>
+    </div>
 
-  <h3>Python（requests）</h3>
-  <pre><code>import requests
+    <div class="tab-panel" role="tabpanel" data-panel="python">
+      <p class="sub-label">requests を使う場合</p>
+      <pre><code>import requests
 requests.post("$TODOKI_URL", json={"title": "デプロイ完了", "body": "v1.2.3 を本番反映"})</code></pre>
-
-  <p>標準ライブラリだけ（依存なし）なら:</p>
-  <pre><code>from urllib.request import urlopen, Request
+      <p class="sub-label">標準ライブラリだけ（依存なし）</p>
+      <pre><code>from urllib.request import urlopen, Request
 import json
 body = json.dumps({"title": "デプロイ完了", "body": "v1.2.3 を本番反映"}).encode()
 urlopen(Request("$TODOKI_URL", data=body, headers={"content-type": "application/json"}))</code></pre>
+    </div>
 
-  <h3>Node.js（標準 https・依存なし）</h3>
-  <pre><code>const https = require("https");
+    <div class="tab-panel" role="tabpanel" data-panel="node">
+      <p class="sub-label">標準 https モジュール（依存なし）</p>
+      <pre><code>const https = require("https");
 const data = JSON.stringify({ title: "デプロイ完了", body: "v1.2.3 を本番反映" });
 const req = https.request("$TODOKI_URL", {
   method: "POST",
   headers: { "content-type": "application/json", "content-length": data.length },
 });
 req.write(data); req.end();</code></pre>
+    </div>
 
-  <h3>Go</h3>
-  <pre><code>package main
+    <div class="tab-panel" role="tabpanel" data-panel="go">
+      <pre><code>package main
 
 import ("net/http"; "strings")
 
@@ -97,23 +134,28 @@ func main() {
   body := `{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}`
   http.Post("$TODOKI_URL", "application/json", strings.NewReader(body))
 }</code></pre>
+    </div>
 
-  <h3>Ruby</h3>
-  <pre><code>require "net/http"; require "json"
+    <div class="tab-panel" role="tabpanel" data-panel="ruby">
+      <pre><code>require "net/http"; require "json"
 uri = URI("$TODOKI_URL")
 Net::HTTP.post(uri, {title: "デプロイ完了", body: "v1.2.3 を本番反映"}.to_json,
                "content-type" =&gt; "application/json")</code></pre>
+    </div>
 
-  <h3>PowerShell</h3>
-  <pre><code>Invoke-RestMethod -Uri "$TODOKI_URL" -Method Post -ContentType "application/json" `
+    <div class="tab-panel" role="tabpanel" data-panel="powershell">
+      <pre><code>Invoke-RestMethod -Uri "$TODOKI_URL" -Method Post -ContentType "application/json" `
   -Body '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'</code></pre>
+    </div>
 
-  <h3>HTTPie</h3>
-  <pre><code>http POST "$TODOKI_URL" title="デプロイ完了" body="v1.2.3 を本番反映"</code></pre>
+    <div class="tab-panel" role="tabpanel" data-panel="httpie">
+      <pre><code>http POST "$TODOKI_URL" title="デプロイ完了" body="v1.2.3 を本番反映"</code></pre>
+    </div>
+  </div>
 
-  <p>JSON すら不要なら、プレーンテキストを本文に投げるだけでも通知になります（<code>content-type: text/plain</code>）。</p>
+  <p class="muted">JSON すら不要なら、どの言語でもプレーンテキストを本文に投げるだけで通知になります（<code>content-type: text/plain</code>）。</p>
 
-  <h2>URL ごとのテンプレート</h2>
+  <h2 id="templates">URL ごとのテンプレート</h2>
   <p>送信側のサービスが決まった形の JSON を送ってくる場合（例: <code>{"repo":"...","msg":"..."}</code>）、URL 側にテンプレートを設定しておけば、送信側は生の JSON を送るだけで整形された通知になります。テンプレートはアプリの URL 設定から登録します。</p>
   <pre><code># URL に設定したテンプレート: {"title":"{{repo}}","body":"{{msg}}"}
 
@@ -122,7 +164,7 @@ curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
 # =&gt; 通知: タイトル「todoki/backend」 本文「build passed」</code></pre>
   <p><code>{{a.b}}</code> のようなドット記法でネストした値も参照できます。</p>
 
-  <h2>CI からの利用例</h2>
+  <h2 id="ci">CI からの利用例</h2>
   <h3>GitHub Actions</h3>
   <pre><code># Webhook URL はリポジトリの Secrets に TODOKI_URL として登録しておく
 - name: Notify
@@ -137,21 +179,104 @@ curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
 curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' \
   -d "job finished: exit=$?"</code></pre>
 
-  <h2>レスポンス</h2>
+  <h2 id="heartbeat">途絶監視（ハートビート）</h2>
+  <p>todoki はふだん「届いた通知」を知らせますが、途絶監視はその逆 —— <strong>来るはずの通知が来なくなったこと（沈黙）そのもの</strong>を知らせます。毎朝動くはずのバッチ、定期送信のセンサー、cron が<strong>止まったことに気づく</strong>ための死活監視（dead man's switch）です。</p>
+
+  <div class="callout info">
+    <span class="callout-title">通常の通知はそのまま届きます</span>
+    途絶監視を ON にしても、いつもの通知の受信には影響しません。これは「来なかったこと」を検知する<strong>追加の見張り</strong>で、通知を止める機能ではありません。無料で、通知の月間上限も消費しません。
+  </div>
+
+  <h3>設定する</h3>
+  <p>途絶監視は <strong>URL ごと</strong>に、アプリの URL 詳細画面から設定します。</p>
+  <ol class="steps">
+    <li>アプリで対象の URL を開き、<strong>「途絶を監視」を ON</strong> にします。</li>
+    <li>監視間隔を選びます（<code>15分</code> / <code>1時間</code> / <code>6時間</code> / <code>1日</code> / <code>1週間</code> から。既定は <code>1日</code>）。</li>
+  </ol>
+  <p>「この間隔より長く<strong>その URL が叩かれなかったら</strong>」途絶とみなして通知します。</p>
+
+  <h3>途絶通知を出さないようにするには</h3>
+  <p>答えはシンプルで、<strong>監視間隔の内に、最低 1 回その URL へ POST し続ける</strong>ことです。todoki はその URL への POST を「生存の合図（心拍）」として扱い、POST が届くたびにタイマーをリセットします。間隔を超えて沈黙が続いたときだけ、途絶として通知します。</p>
+  <div class="callout tip">
+    <span class="callout-title">コツ：普段の通知そのものを心拍にする</span>
+    普段の通知 POST も心拍としてカウントされます。たとえば「毎日成功時に完了通知を送るバッチ」なら、その通知がそのまま心拍になります。監視間隔は、その送信の正常な周期より<strong>少し長め</strong>に設定してください（毎日のバッチなら <code>1日</code>）。ジョブが落ちて POST が届かなければ、間隔超過で途絶通知が届きます。
+  </div>
+  <pre><code># 毎日 6:00 に動くジョブ。成功したら todoki に POST（この POST が心拍になる）
+0 6 * * * /path/to/job.sh &amp;&amp; curl -fsS -X POST "$TODOKI_URL" \
+  -H 'content-type: text/plain' -d 'daily job ok' &gt;/dev/null</code></pre>
+  <div class="callout warn">
+    <span class="callout-title">やりがちな失敗</span>
+    「途絶させないため」だけに数分おきの ping を撃つと、その ping 自体が毎回 1 通の通知になり、鳴り続けます。心拍は<strong>意味のある送信に結びつける</strong>のが基本です。なお URL をミュートすると途絶通知も止まります（アプリ内のバッジだけが残る）ので、ミュートは「途絶通知を黙らせる」手段にはなりません。
+  </div>
+
+  <h3>途絶すると、何回通知が来るのか</h3>
+  <p>鳴り続けません。<strong>1 回の途絶につき最大 4 通</strong>（途絶 1 + 追い通知 2 + 復帰 1）で打ち止めです。</p>
+  <ol class="hb-flow">
+    <li class="hb-miss">
+      <span class="hb-badge">1 / 3</span>
+      <div><strong>途絶を検知</strong> — 「『ラベル』からの通知が途絶えています。」を 1 回。
+      <span class="hb-when">設定間隔を過ぎた直後（約 5 分おきに見張っているため、タイミングは最大 5 分ほど前後します）</span></div>
+    </li>
+    <li class="hb-miss">
+      <span class="hb-badge">2 / 3</span>
+      <div><strong>追い通知</strong> — 「まだ途絶えています。」
+      <span class="hb-when">最初の検知から約 6 時間後</span></div>
+    </li>
+    <li class="hb-miss">
+      <span class="hb-badge">3 / 3</span>
+      <div><strong>追い通知（最後）</strong> — 「まだ途絶えています。」
+      <span class="hb-when">最初の検知から約 24 時間後。これ以降は復帰まで沈黙します</span></div>
+    </li>
+    <li class="hb-back">
+      <span class="hb-badge ok">復帰</span>
+      <div><strong>復帰をお知らせ</strong> — URL が再び叩かれたら「『ラベル』が復帰しました。」を 1 回送り、監視は通常状態に戻ります。次に途絶すれば、また 1/3 から数え直します。</div>
+    </li>
+  </ol>
+  <div class="callout info">
+    <span class="callout-title">push を見逃しても大丈夫</span>
+    途絶している間は、アプリ内のその URL に「<strong>途絶</strong>」バッジが常時付きます。push は best-effort（到達保証なし）なので、確実に気づくための“真実”はこのアプリ内表示です。
+  </div>
+  <p class="muted">※ ミュート中の URL では、途絶通知も届きません（アプリ内の「途絶」バッジだけが付きます）。</p>
+
+  <h2 id="responses">レスポンス</h2>
   <table>
     <tr><th>状況</th><th>コード</th><th>body</th></tr>
-    <tr><td>受け付けた</td><td><code>202</code></td><td><code>{"ok":true}</code></td></tr>
-    <tr><td>URL が再発行で失効済み</td><td><code>410</code></td><td><code>{"error":"url revoked"}</code></td></tr>
-    <tr><td>URL が存在しない</td><td><code>404</code></td><td><code>{"error":"url not found"}</code></td></tr>
+    <tr><td>受け付けた</td><td><code class="code-ok">202</code></td><td><code>{"ok":true}</code></td></tr>
+    <tr><td>URL が再発行で失効済み</td><td><code class="code-err">410</code></td><td><code>{"error":"url revoked"}</code></td></tr>
+    <tr><td>URL が存在しない</td><td><code class="code-err">404</code></td><td><code>{"error":"url not found"}</code></td></tr>
   </table>
   <p>セキュリティ上の理由から、応答には配信の詳細（端末への到達結果やミュート状態など）を含めません。<code>202</code> は「受け付けた」ことを意味します。</p>
 
-  <h2>URL の管理</h2>
+  <h2 id="manage">URL の管理</h2>
   <ul>
     <li><strong>再発行</strong> — URL が漏れた疑いがあるときは、アプリからワンタップで再発行。旧 URL は即座に失効（<code>410</code>）します。</li>
     <li><strong>ミュート</strong> — URL ごとに通知の ON/OFF を切り替えられます。送信側にはミュートを悟られません（<code>202</code> のまま）。</li>
     <li><strong>複数 URL</strong> — 用途・サービスごとに URL を分けるのがおすすめです。ラベルを付けて管理できます。</li>
   </ul>
+
+  <h2 id="devices">複数の端末で受け取る（端末リンク）</h2>
+  <p>iPhone と iPad など、<strong>自分の複数の端末</strong>で同じ URL の通知を受け取れます。アプリ内で端末どうしを QR コードでリンクすると、両方の端末の URL が<strong>ひとつに合算され、以後はどちらの端末にも同じ通知が届きます（同期）</strong>。送信側の Webhook URL は変わりません。</p>
+
+  <h3>リンクのしかた</h3>
+  <ol class="steps">
+    <li><strong>端末 A</strong>（すでに使っている方）で「設定 → 端末をリンク → <strong>この端末のコードを表示</strong>」を開きます（QR が表示されます）。</li>
+    <li><strong>端末 B</strong>（追加したい方）で「設定 → 端末をリンク → <strong>QR を読み取って参加</strong>」を開き、A の QR を読み取ります。</li>
+    <li>A 側に「追加しますか？」と出るので <strong>「追加する」</strong>を押すと統合完了。両方の端末で同じ URL の通知を受け取れます。</li>
+  </ol>
+
+  <div class="callout info">
+    <span class="callout-title">自分の端末どうし専用です</span>
+    端末リンクは<strong>同一人物の複数端末</strong>を想定しています。リンクした端末はアカウントを共有し、どちらからでも URL の発行・失効ができます。<strong>失効はどちらの端末からでも両方に反映</strong>されます（合算後は 1 本の URL）。
+  </div>
+
+  <h3>端末を外す（紛失・売却時）</h3>
+  <p>「設定 → 端末をリンク → <strong>リンクした端末</strong>」から、特定の端末を<strong>解除</strong>できます。解除した端末は、以後その URL の通知を受信できなくなり、アカウントの操作（一覧の閲覧・失効・発行）もできなくなります。<strong>端末を紛失・売却したときの遮断</strong>に使ってください。</p>
+  <div class="callout warn">
+    <span class="callout-title">URL 文字列そのものを変えたいときは「再発行」</span>
+    端末の解除は「その端末を外す」操作で、Webhook URL の文字列は変わりません。URL が漏れた疑いがあるときは、解除ではなく<strong>再発行</strong>（旧 URL は即 <code>410</code> 失効）を使ってください。
+  </div>
+
+  <p class="muted">※ 通知履歴は端末ごとに保存され、合算されません（各端末には、その端末で受け取った分だけが残ります）。アカウント全体の引き継ぎ（ログイン）は今後対応予定です。</p>
 </main>
 <footer class="site">
   <div class="inner">
@@ -161,5 +286,47 @@ curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' \
     <span>© 2026 todoki</span>
   </div>
 </footer>
+<script>
+// 言語タブの切り替え。JS が無ければ全パネルが縦に並ぶ（フォールバック）。
+// 選んだ言語は localStorage に覚え、複数のタブ群があれば同じ言語に揃える。
+(function () {
+  var KEY = 'todoki-lang';
+  var groups = Array.prototype.slice.call(document.querySelectorAll('[data-tabs]'));
+  if (!groups.length) return;
+
+  function select(group, name) {
+    var matched = false;
+    group.querySelectorAll('.tab').forEach(function (t) {
+      var on = t.getAttribute('data-tab') === name;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      if (on) matched = true;
+    });
+    if (!matched) return false;
+    group.querySelectorAll('.tab-panel').forEach(function (p) {
+      p.classList.toggle('is-active', p.getAttribute('data-panel') === name);
+    });
+    return true;
+  }
+
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+
+  groups.forEach(function (group) {
+    group.setAttribute('data-tabs-ready', '');
+    var first = group.querySelector('.tab').getAttribute('data-tab');
+    var hasSaved = saved && group.querySelector('.tab[data-tab="' + saved + '"]');
+    select(group, hasSaved ? saved : first);
+
+    group.querySelectorAll('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var name = tab.getAttribute('data-tab');
+        groups.forEach(function (g) { select(g, name); });
+        try { localStorage.setItem(KEY, name); } catch (e) {}
+      });
+    });
+  });
+})();
+</script>
 </body>
 </html>
