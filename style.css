@@ -301,6 +301,59 @@ code.code-err { background: #ffece9; color: #c92a2a; }
 .faq .faq-body > :last-child { margin-bottom: 0; }
 .faq .faq-body ul { margin: 0; padding-left: 1.3em; }
 
+/* --- アプリ画面のスクショ --- */
+/* 端末フレーム風（角丸＋やわらかい影）。画像は portrait phone、JPEG。 */
+figure.shot,
+.shots figure { margin: 0; text-align: center; }
+
+figure.shot { margin: 1.8em 0; }
+
+figure.shot img,
+.shots img,
+.hero-shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.11);
+}
+
+figure.shot img { max-width: 280px; margin: 0 auto; }
+
+figure.shot figcaption,
+.shots figcaption {
+  font-size: 13px;
+  color: var(--fg-soft);
+  margin-top: 10px;
+}
+
+/* 横並びギャラリー（複数画面を一望。狭いと折り返す） */
+.shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: center;
+  margin: 1.8em 0;
+}
+.shots figure { flex: 0 1 210px; max-width: 220px; }
+
+/* --- ヒーロー（見出し＋スクショの 2 カラム。狭いと縦積み） --- */
+.hero {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hero-text { flex: 1 1 330px; min-width: 0; }
+.hero-text h1 { margin-top: 0; }
+.hero-shot {
+  flex: 0 0 auto;
+  width: 232px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
 footer.site {
   border-top: 1px solid var(--border);
   color: var(--fg-soft);

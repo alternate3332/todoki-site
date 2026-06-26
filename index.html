@@ -24,12 +24,19 @@
   </div>
 </header>
 <main>
-  <h1>URL を叩くだけで、<br>スマホに通知が届く。</h1>
-  <p class="lead">todoki は、発行された Webhook URL に HTTP POST するだけでスマホにプッシュ通知が届くサービスです。アカウント登録なし、SDK なし。curl 1 行から始められます。</p>
+  <div class="hero">
+    <div class="hero-text">
+      <h1>URL を叩くだけで、<br>スマホに通知が届く。</h1>
+      <p class="lead">todoki は、発行された Webhook URL に HTTP POST するだけでスマホにプッシュ通知が届くサービスです。アカウント登録なし、SDK なし。curl 1 行から始められます。</p>
 
-  <pre><code>curl -X POST "$TODOKI_URL" \
+      <pre><code>curl -X POST "$TODOKI_URL" \
   -H 'content-type: application/json' \
   -d '{"title":"デプロイ完了","body":"v1.2.3 を本番反映"}'</code></pre>
+    </div>
+    <figure class="hero-shot">
+      <img src="shot-banner.jpg" width="900" height="1951" alt="ホーム画面に「デプロイ成功」のプッシュ通知が届いた様子">
+    </figure>
+  </div>
 
   <h2>使い方は 3 ステップ</h2>
   <ol class="steps">
@@ -37,6 +44,17 @@
     <li><strong>URL を発行する</strong> — アプリ内で通知用の URL を発行し、コピーします。URL は用途ごとに何本でも作れます。</li>
     <li><strong>POST する</strong> — CI・サーバ・スクリプトなど、HTTP を話せるものならどこからでも。届いた通知はアプリが受け取ります。</li>
   </ol>
+
+  <div class="shots">
+    <figure>
+      <img src="shot-url-list.jpg" width="900" height="1951" alt="アプリの URL 一覧画面。用途ごとに発行した Webhook URL が並ぶ" loading="lazy">
+      <figcaption>用途ごとに URL を発行</figcaption>
+    </figure>
+    <figure>
+      <img src="shot-inbox.jpg" width="900" height="1951" alt="アプリの受信画面。届いた通知がカードで一覧表示される" loading="lazy">
+      <figcaption>POST した通知が届く</figcaption>
+    </figure>
+  </div>
 
   <h2>こんな用途に</h2>
   <ul>
@@ -50,7 +68,7 @@
   <h2>特徴</h2>
   <ul>
     <li><strong>摩擦ゼロ</strong> — アプリを入れた瞬間から使える。アカウント作成・メール認証なし。</li>
-    <li><strong>URL がそのまま秘密鍵</strong> — 推測不能なランダム URL。漏れたらアプリからワンタップで再発行（旧 URL は即失効）。</li>
+    <li><strong>URL がそのまま秘密鍵</strong> — 推測不能なランダム URL。漏れたらアプリからワンタップで失効（旧 URL は即停止）。新しい URL を発行して送信元を差し替えられます。</li>
     <li><strong>柔軟な payload</strong> — JSON でタイトル・本文・タップ時に開く URL・優先度を指定。プレーンテキストを投げるだけでも OK。</li>
     <li><strong>URL ごとのテンプレート</strong> — 送信側はサービスの生 JSON を送るだけ。通知の見た目は URL 側の設定で整形。</li>
     <li><strong>途絶監視</strong> — 「届いた」だけでなく、来るはずの通知が<strong>来なくなったこと</strong>も通知。cron・バッチ・センサーの死活監視に。<a href="usage.html#heartbeat">詳しく →</a></li>

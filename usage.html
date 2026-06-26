@@ -58,7 +58,7 @@
     <tr><th>フィールド</th><th>意味</th><th>例</th></tr>
     <tr><td><code>title</code></td><td>通知タイトル</td><td><code>"ビルド失敗"</code></td></tr>
     <tr><td><code>body</code></td><td>本文</td><td><code>"main ブランチ"</code></td></tr>
-    <tr><td><code>priority</code></td><td>優先度。<code>high</code>（即時）/ <code>normal</code> / <code>low</code></td><td><code>"high"</code></td></tr>
+    <tr><td><code>priority</code></td><td>優先度。<code>time-sensitive</code>（即時）/ <code>normal</code> / <code>low</code></td><td><code>"time-sensitive"</code></td></tr>
     <tr><td><code>click</code></td><td>通知タップ時に開く URL</td><td><code>"https://example.com/build/123"</code></td></tr>
   </table>
   <p>適用の優先順位は「<strong>payload の明示フィールド ＞ URL に設定したテンプレート ＞ 既定値</strong>」です。</p>
@@ -69,10 +69,10 @@
 
   <h3>緊急度を上げる</h3>
   <pre><code>curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
-  -d '{"title":"アラート","body":"CPU 90%","priority":"high"}'</code></pre>
+  -d '{"title":"アラート","body":"CPU 90%","priority":"time-sensitive"}'</code></pre>
 
   <h2 id="languages">言語・ツール別の送信例</h2>
-  <p>ただの HTTP POST なので、HTTP を送れるものなら何からでも通知できます。下のタブで言語を切り替えてください。<code>$TODOKI_URL</code> はあなたの Webhook URL に置き換えます（<strong>アプリの「テスト送信」から、その URL 入りのスニペットをそのままコピーできます</strong>）。</p>
+  <p>ただの HTTP POST なので、HTTP を送れるものなら何からでも通知できます。下のタブで言語を切り替えてください。<code>$TODOKI_URL</code> はあなたの Webhook URL に置き換えます（<strong>curl・JavaScript・Python はアプリの「テスト送信」から、その URL 入りのスニペットをそのままコピーできます</strong>）。</p>
 
   <div class="tabs" data-tabs>
     <div class="tab-bar" role="tablist" aria-label="送信例の言語">
@@ -156,7 +156,7 @@ Net::HTTP.post(uri, {title: "デプロイ完了", body: "v1.2.3 を本番反映"
   <p class="muted">JSON すら不要なら、どの言語でもプレーンテキストを本文に投げるだけで通知になります（<code>content-type: text/plain</code>）。</p>
 
   <h2 id="templates">URL ごとのテンプレート</h2>
-  <p>送信側のサービスが決まった形の JSON を送ってくる場合（例: <code>{"repo":"...","msg":"..."}</code>）、URL 側にテンプレートを設定しておけば、送信側は生の JSON を送るだけで整形された通知になります。テンプレートはアプリの URL 設定から登録します。</p>
+  <p>送信側のサービスが決まった形の JSON を送ってくる場合（例: <code>{"repo":"...","msg":"..."}</code>）、URL 側にテンプレートを設定しておけば、送信側は生の JSON を送るだけで整形された通知になります。<span class="muted">※ テンプレートの登録 UI はアプリで今後対応予定です（下記はその際の書き方）。</span></p>
   <pre><code># URL に設定したテンプレート: {"title":"{{repo}}","body":"{{msg}}"}
 
 curl -X POST "$TODOKI_URL" -H 'content-type: application/json' \
@@ -193,6 +193,10 @@ curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' \
     <li>アプリで対象の URL を開き、<strong>「途絶を監視」を ON</strong> にします。</li>
     <li>監視間隔を選びます（<code>15分</code> / <code>1時間</code> / <code>6時間</code> / <code>1日</code> / <code>1週間</code> から。既定は <code>1日</code>）。</li>
   </ol>
+  <figure class="shot">
+    <img src="shot-url-detail-hb.jpg" width="900" height="1951" alt="URL 詳細画面で「途絶を監視」を ON にし、監視間隔（15分〜1週間）のチップが表示された状態" loading="lazy">
+    <figcaption>「途絶を監視」を ON にして監視間隔を選ぶ</figcaption>
+  </figure>
   <p>「この間隔より長く<strong>その URL が叩かれなかったら</strong>」途絶とみなして通知します。</p>
 
   <h3>途絶通知を出さないようにするには</h3>
@@ -242,20 +246,24 @@ curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' \
   <table>
     <tr><th>状況</th><th>コード</th><th>body</th></tr>
     <tr><td>受け付けた</td><td><code class="code-ok">202</code></td><td><code>{"ok":true}</code></td></tr>
-    <tr><td>URL が再発行で失効済み</td><td><code class="code-err">410</code></td><td><code>{"error":"url revoked"}</code></td></tr>
+    <tr><td>URL が失効済み</td><td><code class="code-err">410</code></td><td><code>{"error":"url revoked"}</code></td></tr>
     <tr><td>URL が存在しない</td><td><code class="code-err">404</code></td><td><code>{"error":"url not found"}</code></td></tr>
   </table>
   <p>セキュリティ上の理由から、応答には配信の詳細（端末への到達結果やミュート状態など）を含めません。<code>202</code> は「受け付けた」ことを意味します。</p>
 
   <h2 id="manage">URL の管理</h2>
   <ul>
-    <li><strong>再発行</strong> — URL が漏れた疑いがあるときは、アプリからワンタップで再発行。旧 URL は即座に失効（<code>410</code>）します。</li>
-    <li><strong>ミュート</strong> — URL ごとに通知の ON/OFF を切り替えられます。送信側にはミュートを悟られません（<code>202</code> のまま）。</li>
+    <li><strong>失効</strong> — URL が漏れた疑いがあるときは、アプリからワンタップで失効。旧 URL は即座に <code>410</code> になります。新しい URL を発行して送信元を差し替えてください（設定をそのまま引き継ぐ「再発行」はアプリで今後対応予定）。</li>
+    <li><strong>ミュート</strong> — URL ごとに通知の ON/OFF を切り替えられます（アプリの「通知を受け取る」）。送信側にはミュートを悟られません（<code>202</code> のまま）。</li>
     <li><strong>複数 URL</strong> — 用途・サービスごとに URL を分けるのがおすすめです。ラベルを付けて管理できます。</li>
   </ul>
+  <figure class="shot">
+    <img src="shot-url-detail.jpg" width="900" height="1951" alt="URL 詳細画面。「通知を受け取る」（ミュート）と「この URL を失効」の操作が並ぶ" loading="lazy">
+    <figcaption>各 URL の詳細画面で、ミュート（通知を受け取る）や失効ができます</figcaption>
+  </figure>
 
   <h2 id="devices">複数の端末で受け取る（端末リンク）</h2>
-  <p>iPhone と iPad など、<strong>自分の複数の端末</strong>で同じ URL の通知を受け取れます。アプリ内で端末どうしを QR コードでリンクすると、両方の端末の URL が<strong>ひとつに合算され、以後はどちらの端末にも同じ通知が届きます（同期）</strong>。送信側の Webhook URL は変わりません。</p>
+  <p>iPhone と Android スマホなど、<strong>自分の複数のスマホ</strong>で同じ URL の通知を受け取れます。アプリ内で端末どうしを QR コードでリンクすると、両方の端末の URL が<strong>ひとつに合算され、以後はどちらの端末にも同じ通知が届きます（同期）</strong>。送信側の Webhook URL は変わりません。</p>
 
   <h3>リンクのしかた</h3>
   <ol class="steps">
@@ -272,8 +280,8 @@ curl -X POST "$TODOKI_URL" -H 'content-type: text/plain' \
   <h3>端末を外す（紛失・売却時）</h3>
   <p>「設定 → 端末をリンク → <strong>リンクした端末</strong>」から、特定の端末を<strong>解除</strong>できます。解除した端末は、以後その URL の通知を受信できなくなり、アカウントの操作（一覧の閲覧・失効・発行）もできなくなります。<strong>端末を紛失・売却したときの遮断</strong>に使ってください。</p>
   <div class="callout warn">
-    <span class="callout-title">URL 文字列そのものを変えたいときは「再発行」</span>
-    端末の解除は「その端末を外す」操作で、Webhook URL の文字列は変わりません。URL が漏れた疑いがあるときは、解除ではなく<strong>再発行</strong>（旧 URL は即 <code>410</code> 失効）を使ってください。
+    <span class="callout-title">URL 文字列そのものを変えたいときは「失効」</span>
+    端末の解除は「その端末を外す」操作で、Webhook URL の文字列は変わりません。URL が漏れた疑いがあるときは、解除ではなく<strong>失効</strong>（旧 URL は即 <code>410</code>）し、新しい URL を発行し直してください。
   </div>
 
   <p class="muted">※ 通知履歴は端末ごとに保存され、合算されません（各端末には、その端末で受け取った分だけが残ります）。アカウント全体の引き継ぎ（ログイン）は今後対応予定です。</p>
